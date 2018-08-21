@@ -1,0 +1,2 @@
+# imGOur
+Imgur album downloader
