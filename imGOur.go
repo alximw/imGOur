@@ -49,7 +49,7 @@ func main(){
 
 	if (len(args)<2){
 		//Wrong number of parameters
-		fmt.Println("[Error!]:Invalid number of arguments!")
+		red(fmt.Sprintln("[Error!]:Invalid number of arguments!"))
 		usage()
 		os.Exit(1)
 
@@ -268,6 +268,6 @@ func CurrentMilis() int64 {
 }
 
 func usage(){
-	fmt.Println("USAGE: imgour <imgour link> [directory]")
+	green(fmt.Sprintf("USAGE: imgour <imgour link> [directory]\n"))
 }
 
