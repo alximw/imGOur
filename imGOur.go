@@ -22,6 +22,23 @@ type albuminfo struct{
 
 }
 
+func yellow(text string){
+
+	fmt.Printf("\033[33m %s\033[0m", text)
+}
+
+func green(text string){
+
+	fmt.Printf("\033[32m %s\033[0m", text)
+}
+
+
+func red(text string){
+
+	fmt.Printf("\033[31m %s\033[0m", text)
+}
+
+
 func main(){
 
 	args := os.Args
@@ -49,7 +66,7 @@ func main(){
 	// get album information
 	mAlbumInfo := ParseAlbumInfo(album)
 	if mAlbumInfo==nil{
-		fmt.Println("PARSE ERROR: Couldn't parse album link: %s",album)
+		red(fmt.Sprintf("PARSE ERROR: Couldn't parse album link: %s",album))
 		os.Exit(1)
 	}
 	picture_path := path.Join(directory,mAlbumInfo.album_name)
@@ -57,14 +74,14 @@ func main(){
 	if (mAlbumInfo.album_type == "S"){
 		
 		//single picture album (i.e i.imgur.com/whatever)
-		fmt.Printf("[+] Downloading picture to directory %s ...",picture_path) 	
+		yellow(fmt.Sprintf("[+] Downloading picture to directory %s ...",picture_path))
 		bytes, time := DownloadLink(album,picture_path)
-		fmt.Printf("Done.Took %d to download %d bytes.",time, bytes) 	
+		green(fmt.Sprintf("Done.Took %d to download %d bytes.",time, bytes))
 
 	}else{
 
 	  	//full sized picture album (more than 1 picture) (i.e imgur.com/a/whatever, imgur.com/wharever, or imgur.com/gallery/whatever)
-	  	fmt.Printf("[+] Downloading album %s to directory: %s \n",album, picture_path)
+	  	green(fmt.Sprintf("[+] Downloading album %s to directory: %s \n",album, picture_path))
   	  	//gather all links by scraping the html webpage
   	  	my_links := ParseAlbumWebsite(album,mAlbumInfo)
   	  	
@@ -75,15 +92,15 @@ func main(){
   	  for key,_ := range my_links{
 
   	  	sliced_link := strings.Split(key ,"/")
-  	  	fmt.Printf("[+] Downloading %s .... ",key)
+  	  	yellow(fmt.Sprintf("[+] Downloading %s....",key))
   	   	// Download file to the provided path
   	   	bytes, milis := DownloadLink(key, path.Join(picture_path,sliced_link[len(sliced_link)-1]))
-  	   	fmt.Printf("DONE\n")
+  	   	yellow(fmt.Sprintf("DONE\n"))
   	   	// update byte/time count
   	   	total_time += milis
   	   	total_bytes += bytes
   	  }
-  	  fmt.Printf("Finished. Downloaded %d bytes in %d miliseconds\n",total_bytes, total_time)
+  	  green(fmt.Sprintf("Finished. Downloaded %d bytes in %d miliseconds\n",total_bytes, total_time))
 
 	  
   	}	
@@ -189,7 +206,7 @@ func ParseAlbumInfo(album_link string) *albuminfo {
 			return info
 			
 		}else{
-			fmt.Println("Error. Not a valid Imgur.com link")
+			red("Error. Not a valid Imgur.com link")
 		}
 	}
 	return nil
@@ -212,7 +229,7 @@ func DownloadLink(link string, path string)(int64, int64){
 	//Create file
 	out_file, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
-		fmt.Printf("IO Error: Couldn't create file %s\n",path)
+		red(fmt.Sprintf("IO Error: Couldn't create file %s\n",path))
 		return 0,0
 	}
 	defer out_file.Close()
@@ -220,12 +237,12 @@ func DownloadLink(link string, path string)(int64, int64){
 	// Open picture link
 	resp, err := http.Get(link)
 	if err != nil{
-		fmt.Printf("NET Error: Couldn't open link  %s\n",link)
+		red(fmt.Sprintf("NET Error: Couldn't open link  %s\n",link))
 		return 0,0
 	}
 
 	if resp.StatusCode != 200{
-		fmt.Printf("NET Error: Unexpected http status code\n")
+		red(fmt.Sprintf("NET Error: Unexpected http status code\n"))
 		return 0,0
 	}
 	defer resp.Body.Close()
@@ -234,7 +251,7 @@ func DownloadLink(link string, path string)(int64, int64){
 
 	bytes,err := io.Copy(out_file, resp.Body)
 	if err != nil{
-		fmt.Printf("IO Error: Couln't copy response body to file")
+		red(fmt.Sprintf("IO Error: Couln't copy response body to file"))
 		return 0,0
 	}
 	// update time and bytes counter
